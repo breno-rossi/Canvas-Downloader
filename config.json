@@ -1,0 +1,15 @@
+{
+  "output_dir": "Downloads",
+  "course_ids": [],
+  "chunk_size_bytes": 524288,
+  "rate_limit_backoff_seconds": 30,
+  "request_delay_seconds": 0.15,
+  "max_retries": 5,
+  "download_types": {
+    "course_files": true,
+    "module_files": true,
+    "assignment_attachments": true,
+    "wiki_pages": true
+  },
+  "skip_locked_files": true
+}
