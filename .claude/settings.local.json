@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\Breno\\\\Desktop\\\\Baixador de Conteudo Canvas\" -Recurse -File)",
+      "Bash(Select-Object FullName)",
+      "WebSearch",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Breno\\\\Desktop\\\\Baixador de Conteudo Canvas\" -Force -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })",
+      "PowerShell(@\\(Get-ChildItem -Path \"C:\\\\Users\\\\Breno\\\\Desktop\\\\Baixador de Conteudo Canvas\" -Attributes !Directory -Force\\) | Write-Host)",
+      "PowerShell(@\\(Get-ChildItem -Path \"C:\\\\Users\\\\Breno\\\\Desktop\\\\Baixador de Conteudo Canvas\\\\.claude\" -Recurse -Force\\) | Write-Host)",
+      "PowerShell(\\(Get-Item \"C:\\\\Users\\\\Breno\\\\Desktop\\\\Baixador de Conteudo Canvas\"\\).GetDirectories\\(\\) + \\(Get-Item \"C:\\\\Users\\\\Breno\\\\Desktop\\\\Baixador de Conteudo Canvas\"\\).GetFiles\\(\\) | ForEach-Object { \"$\\($_.FullName\\)\" })",
+      "Bash(pip show *)",
+      "Bash(python -c \"import sys; print\\(sys.executable\\)\")",
+      "Bash(python -c \"import canvasapi\")",
+      "Bash(python *)",
+      "Bash(pip index *)",
+      "Bash(Get-Content \"C:\\\\Users\\\\Breno\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-Breno-Desktop-Baixador-de-Conteudo-Canvas\\\\44206d41-da2d-4925-8317-583c2f760801\\\\tasks\\\\bwj0wer6n.output\" -Wait)",
+      "Bash(Select-String --line-buffered \"INFO|WARNING|ERROR|Conclu|Total|Baixando|Escaneando|cursos|Traceback|Exit\")"
+    ]
+  }
+}

@@ -11,5 +11,9 @@
     "assignment_attachments": true,
     "wiki_pages": true
   },
-  "skip_locked_files": true
+  "skip_locked_files": true,
+  "ignore_names": [
+    "Diretrizes para uso da I.A. na PUCPR",
+    "Orientação aos Estudantes - Aulas Remotas - Microsoft Teams"
+  ]
 }

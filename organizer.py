@@ -1,8 +1,23 @@
 import re
 from pathlib import Path
+from urllib.parse import unquote_plus
 
 _ILLEGAL_CHARS = re.compile(r'[\\/:*?"<>|\x00-\x1f]')
 _TRAILING = re.compile(r'[. ]+$')
+
+
+def decode_filename(name: str) -> str:
+    """Decodifica nomes vindos do Canvas com codificação de URL.
+
+    Ex.: 'fun%C3%A7%C3%A3o+1+Afim.py' -> 'função 1 Afim.py'
+         '06_09_Exercicio+Heranca.py' -> '06_09_Exercicio Heranca.py'
+    """
+    try:
+        decoded = unquote_plus(name)
+    except Exception:
+        decoded = name
+    # colapsa espaços resultantes
+    return re.sub(r"\s+", " ", decoded).strip()
 
 
 def sanitize(name: str, max_len: int = 200) -> str:
@@ -23,7 +38,7 @@ def _course_folder(course: dict) -> str:
 
 
 def build_path(output_dir: str, course: dict, tipo: str, filename: str) -> Path:
-    return Path(output_dir) / _course_folder(course) / tipo / sanitize(filename)
+    return Path(output_dir) / _course_folder(course) / tipo / sanitize(decode_filename(filename))
 
 
 def build_page_path(output_dir: str, course: dict, title: str) -> Path:

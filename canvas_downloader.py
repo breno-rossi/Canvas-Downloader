@@ -14,6 +14,7 @@ import logging
 import os
 import re
 import sys
+import unicodedata
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
@@ -33,7 +34,7 @@ except ImportError:
 
 from canvas_api import CanvasAPI
 from downloader import Downloader
-from organizer import build_path, build_page_path, sanitize, unique_path
+from organizer import build_path, build_page_path, decode_filename, sanitize, unique_path
 
 # ---------------------------------------------------------------------------
 # Logging
@@ -89,6 +90,21 @@ def load_config() -> tuple[str, str, dict]:
 _FILE_ID_RE = re.compile(r'/files/(\d+)', re.IGNORECASE)
 
 
+def _normalize_name(name: str) -> str:
+    """Normaliza um nome para comparação: minúsculas, sem acentos, sem extensão."""
+    # decodifica codificação de URL (+ -> espaço, %XX -> caractere)
+    name = decode_filename(name)
+    # remove extensão (.pdf, .html, .docx, etc.) — apenas sufixos curtos
+    # alfanuméricos, para não quebrar nomes com pontos como "I.A."
+    name = re.sub(r"\.[A-Za-z0-9]{1,5}$", "", name)
+    # remove acentos
+    name = unicodedata.normalize("NFKD", name)
+    name = "".join(c for c in name if not unicodedata.combining(c))
+    # colapsa espaços e baixa caixa
+    name = re.sub(r"\s+", " ", name).strip().lower()
+    return name
+
+
 def extract_canvas_file_ids(html: str | None) -> list[int]:
     if not html:
         return []
@@ -111,8 +127,12 @@ def extract_canvas_file_ids(html: str | None) -> list[int]:
 def collect_records(api: CanvasAPI, courses: list[dict], cfg: dict, output_dir: str) -> list[dict]:
     dt = cfg.get("download_types", {})
     skip_locked = cfg.get("skip_locked_files", True)
+    ignore_names = {_normalize_name(n) for n in cfg.get("ignore_names", [])}
     records: list[dict] = []
     seen_file_ids: set[int] = set()
+
+    def _is_ignored(name: str | None) -> bool:
+        return bool(name) and _normalize_name(name) in ignore_names
 
     def _add_file(file_obj: dict, dest_path: Path):
         fid = file_obj.get("id")
@@ -120,6 +140,9 @@ def collect_records(api: CanvasAPI, courses: list[dict], cfg: dict, output_dir: 
             return
         if fid:
             seen_file_ids.add(fid)
+        if _is_ignored(file_obj.get("filename")) or _is_ignored(file_obj.get("display_name")):
+            log.debug("Arquivo ignorado (ignore_names): %s", file_obj.get("filename"))
+            return
         if skip_locked and file_obj.get("locked_for_user"):
             log.debug("Arquivo bloqueado, pulando: %s", file_obj.get("filename"))
             return
@@ -189,6 +212,10 @@ def collect_records(api: CanvasAPI, courses: list[dict], cfg: dict, output_dir: 
                     continue
                 title = page_data.get("title") or page.get("title") or f"pagina_{page['url']}"
                 body = page_data.get("body") or ""
+
+                if _is_ignored(title):
+                    log.debug("Página ignorada (ignore_names): %s", title)
+                    continue
 
                 # Salva a página como HTML
                 html_dest = build_page_path(output_dir, course, title)
